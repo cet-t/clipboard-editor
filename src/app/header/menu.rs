@@ -4,13 +4,10 @@ use crate::app::CbEditor;
 
 impl CbEditor {
     pub fn header(&mut self, ui: &mut egui::Ui) {
-        ui.columns_const(|headers: &mut [egui::Ui; 2]| {
-            for header in headers.iter_mut() {
-                header.set_width(25.);
-            }
-
-            headers[0].menu_button("app", |ui| self.header_app(ui));
-            headers[1].menu_button("help", |ui| self.header_help(ui));
+        ui.horizontal(|ui| {
+            ui.menu_button("app", |ui| self.header_app(ui));
+            ui.menu_button("setting", |ui| self.header_setting(ui));
+            ui.menu_button("help", |ui| self.header_help(ui));
         });
     }
 
@@ -19,38 +16,60 @@ impl CbEditor {
         //  reload
         //  quit
 
+        #[allow(clippy::collapsible_if)]
         if ui
             .small_button("reload")
-            .on_hover_ui(|ui_hover| {
-                ui_hover.label("Reload the application");
+            .on_hover_ui(|ui| {
+                ui.label("Reload the application");
             })
             .clicked()
         {
-            std::process::exit(0);
+            tracing::info!("reload clicked");
+
+            if let Ok(histries) = clipboard::get_clipboard_history() {
+                self.histries = histries;
+            }
         }
 
         if ui.small_button("quit").clicked() {
+            tracing::info!("quit clicked");
+
             std::process::exit(0);
         }
     }
 
-    fn header_help(&mut self, ui_help: &mut egui::Ui) {
+    fn header_setting(&mut self, ui: &mut egui::Ui) {
+        // setting/
+        //  preference
+
+        if ui.small_button("preference").clicked() {
+            tracing::info!("preference clicked");
+
+            self.window_flags.setting = true;
+        }
+    }
+
+    fn header_help(&mut self, ui: &mut egui::Ui) {
         // help/
         //  info
         //  github
 
-        if ui_help.small_button("info").clicked() {
+        if ui.small_button("info").clicked() {
+            tracing::info!("info clicked");
+
             self.window_flags.info = true;
         }
 
-        if ui_help
-            .small_button("github")
-            .on_hover_ui(|ui_hover| {
-                ui_hover.label("Open github with new tab on default browser");
+        if ui
+            .add_enabled(false, egui::Button::new("source").small())
+            .on_hover_ui(|ui| {
+                ui.label("Open github with new tab on default browser");
             })
             .clicked()
         {
-            ui_help.open_url(egui::OpenUrl::new_tab("https://github.com/cet-t"));
+            tracing::info!("github clicked");
+
+            ui.open_url(egui::OpenUrl::new_tab("https://github.com/cet-t"));
         }
     }
 }

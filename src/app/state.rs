@@ -2,10 +2,11 @@
 pub struct WindowFlags {
     pub info: bool,
     pub editor: bool,
+    pub setting: bool,
 }
 
 impl WindowFlags {
-    pub fn is_opening(self) -> bool {
-        self.info || self.editor
+    pub const fn is_opening(&self) -> bool {
+        self.info || self.editor || self.setting
     }
 }
